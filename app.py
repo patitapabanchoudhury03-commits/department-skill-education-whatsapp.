@@ -150,7 +150,10 @@ async def verify_webhook(request: Request):
 
 @app.post("/webhook")
 async def receive_webhook(request: Request):
+    try:
     payload = await request.json()
+except Exception:
+    return {"status": "ignored", "reason": "Empty or invalid JSON"}
     try:
         entries = payload.get("entry", [])
         for entry in entries:
