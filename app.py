@@ -178,20 +178,19 @@ async def receive_webhook(request: Request):
         print("Webhook processing issue:", repr(exc))
 
     return {"status": "ok"}
-                    if phone:
-                        handle_incoming(phone, text)
-    except Exception as exc:
-        print("Webhook processing issue:", repr(exc))
-        # Acknowledge quickly; inspect server logs to diagnose setup errors.
-    return {"status": "ok"}
+
 
 @app.get("/health")
 def health():
     return {"status": "ok", "service": "Department of Skill Education survey agent"}
 
+
 @app.get("/responses")
 def responses():
     con = db()
-    rows = con.execute("SELECT phone,language,name,gender,employment_status,job_alerts,trade,completed,updated_at FROM responses ORDER BY updated_at DESC").fetchall()
+    rows = con.execute(
+        "SELECT phone,language,name,gender,employment_status,job_alerts,trade,completed,updated_at "
+        "FROM responses ORDER BY updated_at DESC"
+    ).fetchall()
     con.close()
     return [dict(row) for row in rows]
