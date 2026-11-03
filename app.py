@@ -152,16 +152,32 @@ async def verify_webhook(request: Request):
 async def receive_webhook(request: Request):
     try:
         payload = await request.json()
-    except Exception:
-        return {"status": "ignored", "reason": "Empty or invalid JSON"}
+    except Exception as exc:
+        print("Invalid webhook JSON:", repr(exc))
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
+    print("Webhook received:", json.dumps(payload, ensure_ascii=False))
+
     try:
         entries = payload.get("entry", [])
+
         for entry in entries:
             for change in entry.get("changes", []):
                 value = change.get("value", {})
+
                 for message in value.get("messages", []):
                     phone = message.get("from")
                     text = get_text(message)
+
+                    print("Incoming WhatsApp message:", phone, repr(text))
+
+                    if phone:
+                        handle_incoming(phone, text)
+
+    except Exception as exc:
+        print("Webhook processing issue:", repr(exc))
+
+    return {"status": "ok"}
                     if phone:
                         handle_incoming(phone, text)
     except Exception as exc:
